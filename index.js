@@ -15,36 +15,41 @@ document.getElementById('user_form').addEventListener('submit', function(event) 
     }
 
     if (age < 18 || age > 55) {
-        alert('Age must be between 18 and 55.');
+        displayValidationMessage('Age must be between 18 and 55.');
         return;
     }
+
+    const hashedPassword = hashPassword(password);
 
     const userData = {
         name,
         email,
-        password,
+        password: hashedPassword,
         dob,
         acceptTerms
     };
 
-    localStorage.setItem('userData', JSON.stringify(userData));
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    users.push(userData);
+    localStorage.setItem('users', JSON.stringify(users));
     loadUserData();
 });
 
 function loadUserData() {
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    if (userData) {
-        const tableBody = document.querySelector('#userTable tbody');
-        tableBody.innerHTML = `
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const tableBody = document.querySelector('#userTable tbody');
+    tableBody.innerHTML = '';
+    users.forEach(user => {
+        tableBody.innerHTML += `
             <tr>
-                <td>${userData.name}</td>
-                <td>${userData.email}</td>
-                <td>${userData.password}</td>
-                <td>${userData.dob}</td>
-                <td>${userData.acceptTerms ? 'Yes' : 'No'}</td>
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+                <td>${user.password}</td>
+                <td>${user.dob}</td>
+                <td>${user.acceptTerms ? 'Yes' : 'No'}</td>
             </tr>
         `;
-    }
+    });
 }
 
 function setDateLimits() {
@@ -60,8 +65,18 @@ function setDateLimits() {
     dobInput.max = maxDate.toISOString().split('T')[0];
 }
 
+function displayValidationMessage(message) {
+    const validationMessage = document.getElementById('validationMessage');
+    validationMessage.textContent = message;
+    validationMessage.style.display = 'block';
+}
+
+function hashPassword(password) {
+    // Simple hash function for demonstration purposes
+    return btoa(password);
+}
+
 window.onload = function() {
     setDateLimits();
     loadUserData();
 };
-
