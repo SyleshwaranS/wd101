@@ -18,9 +18,6 @@ document.getElementById('user_form').addEventListener('submit', function(event) 
         displayValidationMessage('Age must be between 18 and 55.');
         return;
     }
-
-    const hashedPassword = hashPassword(password);
-
     const userData = {
         name,
         email,
@@ -46,7 +43,7 @@ function loadUserData() {
                 <td>${user.email}</td>
                 <td>${user.password}</td>
                 <td>${user.dob}</td>
-                <td>${user.acceptTerms ? 'Yes' : 'No'}</td>
+                <td>${user.acceptTerms ? 'true ' : 'flase'}</td>
             </tr>
         `;
     });
