@@ -1,82 +1,64 @@
-document.getElementById('user_form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const dob = document.getElementById('dob').value;
-    const acceptTerms = document.getElementById('acceptTerms').checked;
+const form = document.getElementById("registration-form");
+const userTable = document
+  .getElementById("userTable")
+  .getElementsByTagName("tbody")[0];
 
-    const today = new Date();
-    const birthDate = new Date(dob);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDifference = today.getMonth() - birthDate.getMonth();
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
+// Helper function to calculate age
+function calculateAge(dob) {
+  const diff = Date.now() - new Date(dob).getTime();
+  const ageDate = new Date(diff);
+  return Math.abs(ageDate.getUTCFullYear() - 1970);
+}
 
-    if (age < 18 || age > 55) {
-        displayValidationMessage('Age must be between 18 and 55.');
-        return;
-    }
+// Validate age between 18 and 55
+function validateAge(dob) {
+  const age = calculateAge(dob);
+  return age >= 18 && age <= 55;
+}
 
-    const hashedPassword = hashPassword(password);
+// Load saved data from local storage
+function loadSavedData() {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  users.forEach((user) => addUserToTable(user));
+}
 
-    const userData = {
-        name,
-        email,
-        password: hashedPassword,
-        dob,
-        acceptTerms
-    };
+// Add user to the table
+function addUserToTable(user) {
+  const row = userTable.insertRow();
+  row.insertCell(0).textContent = user.name;
+  row.insertCell(1).textContent = user.email;
+  row.insertCell(2).textContent = user.password;
+  row.insertCell(3).textContent = user.dob;
+  row.insertCell(4).textContent = user.terms ? "true" : "false";
+}
 
-    let users = JSON.parse(localStorage.getItem('users')) || [];
-    users.push(userData);
-    localStorage.setItem('users', JSON.stringify(users));
-    loadUserData();
+// Save user data to local storage
+function saveUserData(user) {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  users.push(user);
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const dob = document.getElementById("dob").value;
+  const terms = document.getElementById("terms").checked;
+
+  if (!validateAge(dob)) {
+    alert("Age must be between 18 and 55");
+    return;
+  }
+
+  const user = { name, email, password, dob, terms };
+  addUserToTable(user);
+  saveUserData(user);
+
+  form.reset(); // Clear the form
 });
 
-function loadUserData() {
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const tableBody = document.querySelector('#userTable tbody');
-    tableBody.innerHTML = '';
-    users.forEach(user => {
-        tableBody.innerHTML += `
-            <tr>
-                <td>${user.name}</td>
-                <td>${user.email}</td>
-                <td>${user.password}</td>
-                <td>${user.dob}</td>
-                <td>${user.acceptTerms ? 'true' : 'false'}</td>
-            </tr>
-        `;
-    });
-}
-
-function setDateLimits() {
-    const today = new Date();
-    const minAge = 18;
-    const maxAge = 55;
-
-    const minDate = new Date(today.getFullYear() - maxAge, today.getMonth(), today.getDate());
-    const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
-
-    const dobInput = document.getElementById('dob');
-    dobInput.min = minDate.toISOString().split('T')[0];
-    dobInput.max = maxDate.toISOString().split('T')[0];
-}
-
-function displayValidationMessage(message) {
-    const validationMessage = document.getElementById('validationMessage');
-    validationMessage.textContent = message;
-    validationMessage.style.display = 'block';
-}
-
-function hashPassword(password) {
-    // Simple hash function for demonstration purposes
-    return btoa(password);
-}
-
-window.onload = function() {
-    setDateLimits();
-    loadUserData();
-};
+// Load saved data on page load
+window.onload = loadSavedData;
