@@ -46,7 +46,7 @@ function loadUserData() {
                 <td>${user.email}</td>
                 <td>${user.password}</td>
                 <td>${user.dob}</td>
-                <td>${user.acceptTerms ? 'True' : 'False'}</td>
+                <td>${user.acceptTerms ? 'true' : 'false'}</td>
             </tr>
         `;
     });
